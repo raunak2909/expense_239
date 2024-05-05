@@ -8,7 +8,7 @@ import 'package:ui/presentation/screen/on_board/login_page.dart';
 import 'package:ui/presentation/screen/on_board/sign_up_page.dart';
 
 class IntroPage extends StatefulWidget {
-  static const String KEY='login';
+  static const String KEY='UID';
 
   @override
   State<IntroPage> createState() => _IntroPageState();
@@ -19,7 +19,7 @@ class _IntroPageState extends State<IntroPage> {
   void initState() {
     super.initState();
     checkLog();
-    checkout();
+    //checkout();
   }
   @override
   Widget build(BuildContext context) {
@@ -72,9 +72,9 @@ class _IntroPageState extends State<IntroPage> {
 
   void checkLog()async{
       var pref=await SharedPreferences.getInstance();
-      var login=pref.getBool(IntroPage.KEY);
+      var login=pref.getInt(IntroPage.KEY);
       if(login!=null){
-        if(login){
+        if(login>0){
           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage(),));
         }else{
           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage(),));

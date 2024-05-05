@@ -1,8 +1,36 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui/data/repository/local/local_database.dart';
+import 'package:ui/domain/app_constant.dart';
 
-class ExpensePage1 extends StatelessWidget {
+import '../../../data/model/expense-model.dart';
+
+class ExpensePage1 extends StatefulWidget {
+
+
+  @override
+  State<ExpensePage1> createState() => _ExpensePage1State();
+}
+
+class _ExpensePage1State extends State<ExpensePage1> {
+
+  List<ExpenseModel> listExpenses = [];
+
+  @override
+  void initState(){
+    super.initState();
+    getExpenses();
+
+  }
+
+  void getExpenses() async{
+    var db = MyDataHelper.db;
+    listExpenses = await db.fecExpense();
+    setState(() {
+
+    });
+  }
 
 
   @override
@@ -101,7 +129,37 @@ class ExpensePage1 extends StatelessWidget {
               ],
             ),
             Text('Expense List',style: TextStyle(fontSize: 25,fontWeight: FontWeight.bold),),
-        Container(
+
+        Expanded(
+          child: ListView.builder(
+            itemCount: listExpenses.length,
+              itemBuilder: (_, index){
+
+              var filteredList = AppConstants.mCategories.where((element) => element.catId==listExpenses[index].catId).toList();
+              String imgPath = filteredList[0].catImgPath;
+
+            return ListTile(
+              leading: Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade200,
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Image.asset(imgPath),
+                ),
+              ),
+              title: Text(listExpenses[index].title,style: TextStyle(fontSize: 20,fontWeight: FontWeight.w700),),
+              subtitle: Text(listExpenses[index].desc,style: TextStyle(fontSize: 20,fontWeight: FontWeight.w500,color: Colors.grey),),
+              trailing: Text('  -\u{20B9}${listExpenses[index].amount}',style: TextStyle(fontSize: 20,fontWeight: FontWeight.w700,color: Colors.pinkAccent),),
+            );
+          }),
+        )
+
+
+        /*Container(
           margin: EdgeInsets.only(top: 9,bottom: 9),
           height: 230,
           width: 450,
@@ -198,7 +256,7 @@ class ExpensePage1 extends StatelessWidget {
             ],
             ),
           ),
-        ),
+        ),*/
           ],
         ),
       ),

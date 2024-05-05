@@ -5,19 +5,21 @@ import 'package:sqflite/sqflite.dart';
 import 'package:ui/data/model/expense-model.dart';
 import 'package:ui/data/model/user_model.dart';
 
+import '../../../presentation/screen/splash_screen/intro_page.dart';
+
 class MyDataHelper{
 
   MyDataHelper._();
   static final MyDataHelper db=MyDataHelper._();
   static const String TABLE_NAME_USER='user';
-  static const String TABLE_COLUMN_UID='id';
+  static const String TABLE_COLUMN_UID='uId';
   static const String TABLE_COLUMN_NAME='name';
   static const String TABLE_COLUMN_UEMAIL='email';
   static const String TABLE_COLUMN_UPASS='pass';
   static const String TABLE_COLUMN_UMOBILE='mobile';
 
   static const String TABLE_NAME_EXPENSE='expense';
-  static const String TABLE_COLUMN_EXPID='id';
+  static const String TABLE_COLUMN_EXPID='eId';
   static const String TABLE_COLUMN_ETITLE='title';
   static const String TABLE_COLUMN_EDESC='desc';
   static const String TABLE_COLUMN_ETIME='time';
@@ -26,7 +28,7 @@ class MyDataHelper{
   static const String TABLE_COLUMN_ETYPE='type';
 
   static const String TABLE_NAME_CAT='category';
-  static const String TABLE_COLUMN_CATID='id';
+  static const String TABLE_COLUMN_CATID='catId';
   static const String TABLE_COLUMN_CATNAME='name';
   static const String TABLE_COLUMN_CATIMAGE='image';
 
@@ -46,8 +48,8 @@ class MyDataHelper{
     var root=await getApplicationDocumentsDirectory();
     var mainPath=join(root.path,'ExpenseDb');
     return await openDatabase(mainPath,version: 1,onCreate: (db,version){
-      db.execute(' create table $TABLE_NAME_USER ( $TABLE_COLUMN_UID integer primary key autoincrement , $TABLE_COLUMN_UEMAIL text unique, $TABLE_COLUMN_UPASS text, $TABLE_COLUMN_UMOBILE text,$TABLE_COLUMN_NAME text )');
-      db.execute('create table $TABLE_NAME_EXPENSE( $TABLE_COLUMN_EXPID integer primary key autoincrement,$TABLE_COLUMN_UID integer , $TABLE_COLUMN_ETITLE text,$TABLE_COLUMN_EDESC text,$TABLE_COLUMN_ETIME text,$TABLE_COLUMN_EBALANCE text,$TABLE_COLUMN_EAMOUNT text,$TABLE_COLUMN_ETYPE text)');
+      db.execute('create table $TABLE_NAME_USER ( $TABLE_COLUMN_UID integer primary key autoincrement , $TABLE_COLUMN_UEMAIL text unique, $TABLE_COLUMN_UPASS text, $TABLE_COLUMN_UMOBILE text,$TABLE_COLUMN_NAME text )');
+      db.execute('create table $TABLE_NAME_EXPENSE ( $TABLE_COLUMN_EXPID integer primary key autoincrement, $TABLE_COLUMN_UID integer, $TABLE_COLUMN_ETITLE text, $TABLE_COLUMN_EDESC text, $TABLE_COLUMN_ETIME text, $TABLE_COLUMN_EBALANCE text, $TABLE_COLUMN_EAMOUNT text, $TABLE_COLUMN_ETYPE text, $TABLE_COLUMN_CATID integer)');
      /// db.execute(' create table $TABLE_NAME_CAT ( $TABLE_COLUMN_CATID integer primary key autoincrement,$TABLE_COLUMN_CATNAME text, )');
     });
   }
@@ -69,22 +71,22 @@ class MyDataHelper{
     return data.isNotEmpty;
   }
 
-  Future<bool>login(String email,String pass)async{
+  Future<bool>login({required String email,required String pass})async{
     var db=await getDb();
     var data= await db.query('$TABLE_NAME_USER',where: '$TABLE_COLUMN_UEMAIL = ? AND $TABLE_COLUMN_UPASS = ? ',whereArgs: [email,pass]);
     if(data.isNotEmpty){
-      setUid(UserModel.fromMap(data[0]).uid);
+      await setUid(UserModel.fromMap(data[0]).uid);
     }
     return data.isNotEmpty;
   }
 
   Future<int>getUd()async{
     var pref=await SharedPreferences.getInstance();
-   return  pref.getInt('UID')!;
+    return pref.getInt(IntroPage.KEY)!;
   }
-  void setUid( int Uid)async{
+  Future<void> setUid( int Uid)async{
     var pref=await SharedPreferences.getInstance();
-    pref.setInt('UID', Uid);
+    pref.setInt(IntroPage.KEY, Uid);
   }
 
 

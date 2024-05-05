@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ui/presentation/screen/add_expense/add_expense_page.dart';
 import 'package:ui/presentation/screen/on_board/login_page.dart';
 
 import 'expensepage1.dart';
@@ -52,7 +53,9 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.pinkAccent,
         foregroundColor: Colors.white,
-        onPressed: (){},
+        onPressed: (){
+          Navigator.push(context, MaterialPageRoute(builder: (context) => AddExpenseScreen(balance: 0),));
+        },
         child: Icon(Icons.add),
       ),
     );
