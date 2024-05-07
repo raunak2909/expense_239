@@ -91,11 +91,12 @@ class MyDataHelper{
 
 
   ///[Query for Expense],
-  void addExpense({required ExpenseModel expenseModel})async{
+  Future<bool> addExpense({required ExpenseModel expenseModel})async{
     var db=await getDb();
     var uid=await getUd();
     expenseModel.uid=uid;
-    db.insert('$TABLE_NAME_EXPENSE',expenseModel.toMap() );
+    var rowsEffect = await db.insert('$TABLE_NAME_EXPENSE',expenseModel.toMap() );
+    return rowsEffect>0;
   }
 
   Future<List<ExpenseModel>> fecExpense()async{

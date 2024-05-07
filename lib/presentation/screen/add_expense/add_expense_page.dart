@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:ui/data/model/expense-model.dart';
-
-import '../../../data/repository/local/local_database.dart';
+import 'package:ui/presentation/screen/bloc/expense_bloc.dart';
 import '../../../domain/app_constant.dart';
 import '../../app_widgets/custom_btn.dart';
 import '../../app_widgets/expense_text_field.dart';
@@ -192,8 +192,7 @@ class _AddExpenseState extends State<AddExpenseScreen> {
                           uid: 0,
                           catId: AppConstants.mCategories[selectedCatIndex].catId);
 
-                      var db = MyDataHelper.db;
-                      db.addExpense(expenseModel: newExpense);
+                     context.read<ExpenseBloc>().add(AddExpense(newExpense: newExpense));
 
                       Navigator.pop(context);
 

@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ui/data/repository/local/local_database.dart';
+import 'package:ui/presentation/screen/bloc/expense_bloc.dart';
 import 'package:ui/presentation/screen/on_board/login_page.dart';
 import 'package:ui/presentation/screen/splash_screen/intro_page.dart';
+
 void main() {
-  runApp(const MyApp());
+  runApp(BlocProvider(
+    create: (context) => ExpenseBloc(db: MyDataHelper.db),
+    child: const MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
@@ -22,5 +29,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
-
