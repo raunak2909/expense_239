@@ -4,6 +4,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:ui/data/model/date_wise_expense_model.dart';
+import 'package:ui/data/model/filter_expense_model.dart';
+import 'package:ui/data/model/month_wise_expense_model.dart';
 import 'package:ui/data/repository/local/local_database.dart';
 import 'package:ui/domain/app_constant.dart';
 import 'package:ui/presentation/screen/bloc/expense_bloc.dart';
@@ -17,9 +19,14 @@ class ExpensePage1 extends StatefulWidget {
 
 class _ExpensePage1State extends State<ExpensePage1> {
   List<ExpenseModel> listExpenses = [];
-  List<DateWiseExpenseModel> listDateWiseExpModel = [];
+  List<FilterExpenseModel> listFilterExpModel = [];
+  //List<MonthWiseExpenseModel> listMonthWiseExpModel = [];
+  var typeDate='This Month';
+
 
   var dateFormat = DateFormat.yMMMMd();
+  var monthFormat = DateFormat.LLLL();
+  var yearFormat = DateFormat.y();
 
   @override
   void initState() {
@@ -91,7 +98,7 @@ class _ExpensePage1State extends State<ExpensePage1> {
                     ),
                   ],
                 ),
-                Container(
+                /*Container(
                   decoration: BoxDecoration(
                       color: Colors.grey.shade300,
                       borderRadius: BorderRadius.circular(5)),
@@ -107,6 +114,37 @@ class _ExpensePage1State extends State<ExpensePage1> {
                       ),
                       Icon(Icons.arrow_drop_down_outlined)
                     ],
+                  ),
+                )*/
+
+                Container(
+                  decoration: BoxDecoration(
+                      color: Colors.grey.shade400,
+                      borderRadius: BorderRadius.circular(5)
+                  ),
+                  height: 35,
+                  child: Center(
+                    child: DropdownButton(
+
+                      dropdownColor: Colors.grey.shade400,
+
+                      value: typeDate,
+                      onChanged: (newValue) {
+                        if(newValue=='This Month') {
+                          filterExpenseMonthWise(allExpenses: listExpenses);
+                        } else if(newValue=='Date Wise'){
+                          filterExpenseDateWise(allExpenses: listExpenses);
+                        }
+                        setState(() {
+                          typeDate=newValue!;
+                        });
+                      },
+                      items: ['This Month','This Year','This Week','Date Wise'].map((e) {
+                        return DropdownMenuItem(
+                            value: e,
+                            child: Text(e,style: TextStyle(color: Colors.black)));
+                      }).toList(),
+                    ),
                   ),
                 )
               ],
@@ -188,10 +226,11 @@ class _ExpensePage1State extends State<ExpensePage1> {
                 }
 
                 if (state is ExpenseLoadedState) {
-                  filterExpenseDateWise(allExpenses: state.allExpenses);
 
+                  //filterExpenseMonthWise(allExpenses: state.allExpenses);
+                  listExpenses = state.allExpenses;
                   return ListView.builder(
-                    itemCount: listDateWiseExpModel.length,
+                      itemCount: listFilterExpModel.length,
                       itemBuilder: (_, parentIndex){
                     return Container(
                       margin: EdgeInsets.only(top: 9,bottom: 9),
@@ -204,8 +243,8 @@ class _ExpensePage1State extends State<ExpensePage1> {
                         child: Column(children: [
                           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('${listDateWiseExpModel[parentIndex].date}',style: TextStyle(fontSize: 22,fontWeight: FontWeight.w700),),
-                              Text('-\$${listDateWiseExpModel[parentIndex].totalAmt}',style: TextStyle(fontSize: 22,fontWeight: FontWeight.w700),),
+                              Text(listFilterExpModel[parentIndex].title,style: TextStyle(fontSize: 22,fontWeight: FontWeight.w700),),
+                              Text('-\$${listFilterExpModel[parentIndex].totalAmt}',style: TextStyle(fontSize: 22,fontWeight: FontWeight.w700),),
                             ],),
                           Padding(
                             padding: const EdgeInsets.only(top:5,bottom: 5),
@@ -219,11 +258,11 @@ class _ExpensePage1State extends State<ExpensePage1> {
                         ListView.builder(
                             shrinkWrap: true,
                             physics: NeverScrollableScrollPhysics(),
-                            itemCount: listDateWiseExpModel[parentIndex].eachDateAllExpenses.length,
+                            itemCount: listFilterExpModel[parentIndex].allExpenses.length,
                             itemBuilder: (_, index) {
                               var filteredList = AppConstants.mCategories
                                   .where((element) =>
-                              element.catId == listDateWiseExpModel[parentIndex].eachDateAllExpenses[index].catId)
+                              element.catId == listFilterExpModel[parentIndex].allExpenses[index].catId)
                                   .toList();
                               String imgPath = filteredList[0].catImgPath;
 
@@ -241,19 +280,19 @@ class _ExpensePage1State extends State<ExpensePage1> {
                                   ),
                                 ),
                                 title: Text(
-                                  listDateWiseExpModel[parentIndex].eachDateAllExpenses[index].title,
+                                  listFilterExpModel[parentIndex].allExpenses[index].title,
                                   style: TextStyle(
                                       fontSize: 20, fontWeight: FontWeight.w700),
                                 ),
                                 subtitle: Text(
-                                  listDateWiseExpModel[parentIndex].eachDateAllExpenses[index].desc,
+                                  listFilterExpModel[parentIndex].allExpenses[index].desc,
                                   style: TextStyle(
                                       fontSize: 20,
                                       fontWeight: FontWeight.w500,
                                       color: Colors.grey),
                                 ),
                                 trailing: Text(
-                                  '  -\u{20B9}${listDateWiseExpModel[parentIndex].eachDateAllExpenses[index].amount}',
+                                  '  -\u{20B9}${listFilterExpModel[parentIndex].allExpenses[index].amount}',
                                   style: TextStyle(
                                       fontSize: 20,
                                       fontWeight: FontWeight.w700,
@@ -378,7 +417,7 @@ class _ExpensePage1State extends State<ExpensePage1> {
   }
 
   void filterExpenseDateWise({required List<ExpenseModel> allExpenses}) {
-    listDateWiseExpModel.clear();
+    listFilterExpModel.clear();
     /// find the unique dates
     List<String> uniqueDates = [];
 
@@ -417,13 +456,66 @@ class _ExpensePage1State extends State<ExpensePage1> {
         }
       }
 
-      listDateWiseExpModel.add(DateWiseExpenseModel(
-          date: eachDate,
+      listFilterExpModel.add(FilterExpenseModel(
+          title: eachDate,
           totalAmt: totalExpAmt.toString(),
-          eachDateAllExpenses: eachDateExpenses));
+          allExpenses: eachDateExpenses));
     }
 
-    print(listDateWiseExpModel.length);
+    print(listFilterExpModel.length);
+  }
+
+  void filterExpenseMonthWise({required List<ExpenseModel> allExpenses}) {
+    listFilterExpModel.clear();
+    /// find the unique dates
+    List<String> uniqueMonths = [];
+
+    for (int i = 0; i<allExpenses.length; i++) {
+      var createdAt = allExpenses[i].time;
+      var mDateTime = DateTime.fromMillisecondsSinceEpoch(int.parse(createdAt));
+      var eachExpenseMonth = monthFormat.format(mDateTime);
+      var eachExpenseYear = yearFormat.format(mDateTime);
+
+      print("$eachExpenseMonth-$eachExpenseYear");
+      var eachExpenseMonthYear = "$eachExpenseMonth-$eachExpenseYear";
+
+      if (!uniqueMonths.contains(eachExpenseMonthYear)) {
+        uniqueMonths.add(eachExpenseMonthYear);
+      }
+      print(uniqueMonths);
+    }
+
+    for (String eachMonth in uniqueMonths) {
+      num totalExpAmt = 0.0;
+      List<ExpenseModel> eachMonthExpenses = [];
+
+      for (ExpenseModel eachExpense in allExpenses) {
+        var createdAt = eachExpense.time;
+        var mDateTime =
+        DateTime.fromMillisecondsSinceEpoch(int.parse(createdAt));
+        var eachExpenseMonth = monthFormat.format(mDateTime);
+        var eachExpenseYear = yearFormat.format(mDateTime);
+
+        var eachExpenseMonthYear = "$eachExpenseMonth-$eachExpenseYear";
+
+        if (eachExpenseMonthYear == eachMonth) {
+          eachMonthExpenses.add(eachExpense);
+
+          if (eachExpense.type == "Debit") {
+            totalExpAmt -= int.parse(eachExpense.amount);
+          } else {
+            totalExpAmt += int.parse(eachExpense.amount);
+          }
+        }
+      }
+
+      listFilterExpModel.add(FilterExpenseModel(
+          title: eachMonth,
+          totalAmt: totalExpAmt.toString(),
+          allExpenses: eachMonthExpenses));
+    }
+
+    print(listFilterExpModel.length);
   }
 }
 
